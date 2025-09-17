@@ -1,4 +1,3 @@
-# File: .github/workflows/ci.yml
 name: C++ CI
 
 on:
@@ -10,11 +9,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y g++
+      - name: Show repo tree (sanity check)
+        run: |
+          pwd
+          ls -la
 
-      - name: Build and run tests
-        run: make test
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential make
+
+      - name: Build & run tests
+        run: |
+          make clean || true
+          make test 2>&1 | tee build.log
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
